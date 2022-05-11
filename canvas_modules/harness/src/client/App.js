@@ -24,8 +24,9 @@ import Isvg from "react-inlinesvg";
 import ReactTooltip from "react-tooltip";
 import JavascriptFileDownload from "js-file-download";
 import { FormattedMessage, IntlProvider } from "react-intl";
-import { forIn, get, has, isEmpty, isEqual } from "lodash";
+import { forIn, get, has, isEmpty } from "lodash";
 import { hot } from "react-hot-loader/root";
+import { useEffect, useState } from "react"
 
 import { getMessages } from "../intl/intl-utils";
 import * as HarnessBundles from "../intl/locales";
@@ -42,7 +43,6 @@ import FlowsCanvas from "./components/custom-canvases/flows/flows-canvas";
 import TablesCanvas from "./components/custom-canvases/tables/tables-canvas";
 import DetachedCanvas from "./components/custom-canvases/detached-links/detached-canvas";
 import LogicCanvas from "./components/custom-canvases/logic/logic-canvas";
-import ReadOnlyCanvas from "./components/custom-canvases/read-only/read-only";
 import ExplainCanvas from "./components/custom-canvases/explain/explain-canvas";
 import Explain2Canvas from "./components/custom-canvases/explain2/explain2-canvas";
 import StreamsCanvas from "./components/custom-canvases/streams/streams-canvas";
@@ -71,9 +71,9 @@ import * as CustomOpSyntaxCheck from "./custom/condition-ops/customSyntaxCheck";
 
 import BlankCanvasImage from "../../assets/images/blank_canvas.svg";
 
-import { Edit32, Play32, SelectWindow32, StopFilledAlt32, TouchInteraction32, TextScale32 } from "@carbon/icons-react";
+import { Edit32, Play32, StopFilledAlt32 } from "@carbon/icons-react";
 
-import { InlineLoading, Checkbox, Button, OverflowMenu, OverflowMenuItem } from "carbon-components-react";
+import { InlineLoading, Checkbox, Button } from "carbon-components-react";
 
 import {
 	SIDE_PANEL_CANVAS,
@@ -98,7 +98,6 @@ import {
 	EXAMPLE_APP_STREAMS,
 	EXAMPLE_APP_TABLES,
 	EXAMPLE_APP_LOGIC,
-	EXAMPLE_READ_ONLY,
 	CUSTOM,
 	PALETTE_FLYOUT,
 	PROPERTIES_FLYOUT,
@@ -132,6 +131,7 @@ import template32 from "ibm-design-icons/dist/svg/object-based/template_32.svg";
 import FormsService from "./services/FormsService";
 
 import ExpressionInfo from "./constants/json/functionlist.json";
+import { FeatureFlagContext } from "carbon-components-react/lib/components/FeatureFlags";
 
 class App extends React.Component {
 	constructor(props) {
@@ -161,6 +161,7 @@ class App extends React.Component {
 			canvasPalette2: "",
 			selectedInternalObjectModel: true,
 			selectedDragWithoutSelect: false,
+			selectedDragToMoveSizeNodesComments: true,
 			selectedAssocLinkCreation: false,
 			selectedSnapToGridType: NONE_DRAG,
 			enteredSnapToGridX: "",
@@ -205,7 +206,6 @@ class App extends React.Component {
 			selectedExternalPipelineFlows: true,
 			selectedEditingActions: true,
 			selectedMoveNodesOnSupernodeResize: true,
-			selectedResizableNodes: false,
 			selectedDisplayFullLabelOnHover: false,
 			selectedPositionNodeOnRightFlyoutOpen: false,
 			selectedNarrowPalette: true,
@@ -214,15 +214,6 @@ class App extends React.Component {
 			selectedBrowserEditMenu: true,
 			selectedBoundingRectangles: false,
 			selectedNodeLayout: null,
-			// Use these settings when enableResizableNodes is tested (these
-			// settings only work with vertical node format).
-			// selectedNodeLayout: {
-			// 	inputPortDisplay: false,
-			// 	outputPortDisplay: false,
-			// 	imagePosition: "middleCenter", imagePosX: -24, imagePosY: -30,
-			// 	labelPosition: "middleCenter", labelPosX: 0, labelPosY: 20,
-			// 	ellipsisPosition: "middleCenter", ellipsisPosX: 22, ellipsisPosY: -36
-			// },
 			selectedCanvasLayout: null,
 			selectedStateTagTip: "",
 
@@ -237,8 +228,6 @@ class App extends React.Component {
 			disableSaveOnRequiredErrors: true,
 			addRemoveRowsPropertyId: {},
 			addRemoveRowsEnabled: true,
-			hideEditButtonPropertyId: {},
-			hideEditButton: false,
 			tableButtonEnabledPropertyId: {},
 			tableButtonEnabledButtonId: "",
 			tableButtonEnabled: true,
@@ -327,9 +316,6 @@ class App extends React.Component {
 		this.setAddRemoveRowsPropertyId = this.setAddRemoveRowsPropertyId.bind(this);
 		this.setAddRemoveRowsEnabled = this.setAddRemoveRowsEnabled.bind(this);
 		this.setAddRemoveRows = this.setAddRemoveRows.bind(this);
-		this.setHideEditButton = this.setHideEditButton.bind(this);
-		this.setHideEditButtonDisabled = this.setHideEditButtonDisabled.bind(this);
-		this.setHideEditButtonPropertyId = this.setHideEditButtonPropertyId.bind(this);
 		this.setTableButtonPropertyId = this.setTableButtonPropertyId.bind(this);
 		this.setTableButtonId = this.setTableButtonId.bind(this);
 		this.setTableButtonIdEnabled = this.setTableButtonIdEnabled.bind(this);
@@ -394,7 +380,6 @@ class App extends React.Component {
 		this.propertiesControllerHandler2 = this.propertiesControllerHandler2.bind(this);
 
 		this.helpClickHandler = this.helpClickHandler.bind(this);
-		this.tooltipLinkHandler = this.tooltipLinkHandler.bind(this);
 
 		// Array to handle external flows. It is initialized to contain sub-flows
 		// used by the test flow: externalMainCanvas.json
@@ -634,6 +619,8 @@ class App extends React.Component {
 		FormsService.getFileContent(propertyDef.type, propertyDef.fileName)
 			.then(function(res) {
 				const response = res;
+				
+
 				if (node) {
 					if (response.formData) {
 						if (!isEmpty(node.parameters)) {
@@ -786,7 +773,7 @@ class App extends React.Component {
 	setPropertiesJSON(propertiesJson) {
 		this.setState({ propertiesJson: propertiesJson });
 		this.openPropertiesEditorDialog();
-		this.log("Properties set");
+		this.log("");
 	}
 
 	// Called by canvas sidepanel to set state variables
@@ -906,20 +893,6 @@ class App extends React.Component {
 	setAddRemoveRows() {
 		if (this.propertiesController) {
 			this.propertiesController.setAddRemoveRows(this.state.addRemoveRowsPropertyId, this.state.addRemoveRowsEnabled);
-		}
-	}
-
-	setHideEditButtonPropertyId(propertyId) {
-		this.setState({ hideEditButtonPropertyId: propertyId });
-	}
-
-	setHideEditButtonDisabled(disabled) {
-		this.setState({ hideEditButton: disabled });
-	}
-
-	setHideEditButton() {
-		if (this.propertiesController) {
-			this.propertiesController.setHideEditButton(this.state.hideEditButtonPropertyId, this.state.hideEditButton);
 		}
 	}
 
@@ -1407,18 +1380,6 @@ class App extends React.Component {
 		this.log("helpClickHandler()", { nodeTypeId, helpData, appData });
 	}
 
-	// To show link in tooltip
-	tooltipLinkHandler(link) {
-		if (link.id && isEqual(link.propertyId, { name: "number" })) {
-			return { url: "https://www.google.com/", label: "More info" };
-		} else if (link.id && isEqual(link.propertyId, { name: "weather" })) {
-			return { url: "https://www.yahoo.com/", label: "Learn more" };
-		} else if (link.id && isEqual(link.propertyId, { name: "checkbox" })) {
-			return { url: "https://www.google.com/", label: "Link in checkbox" };
-		}
-		return {};
-	}
-
 	contextMenuHandler(source, defaultMenu) {
 		let defMenu = defaultMenu;
 		// Add custom menu items at proper positions: open, preview & execute
@@ -1641,8 +1602,52 @@ class App extends React.Component {
 				this.currentEditorId = nodeId;
 			}
 			// currentEditorNodeId = nodeId; // set new node
+			
 			const appData = { nodeId: nodeId, inExtraCanvas: inExtraCanvas, pipelineId: activePipelineId };
 			this.getNodeForm(nodeId, activePipelineId, canvasController, (properties) => {
+
+
+				// const sample = "https://dummyjson.com/products/1";
+
+				// const [userData, setUserData] = useState({});
+
+
+				// useEffect(() => {
+				// 	fetchData();
+				// }, []);
+
+				// const fetchData = async () => {
+				// 	const response = await fetch(sample);
+				// 	const jsonData = await response.json();
+				// 	setUserData(jsonData);
+				//   };
+				
+				// properties.formData.data.currentParameters.template_name = userData.title;
+				
+			
+
+
+
+
+				// const fetchData = () => {
+				// 	return fetch("https://dummyjson.com/products/1")
+				// 		  .then((response) => response.json())
+				// 		  .then((data) => console.log(data));}
+				
+			
+				// fetchData();
+				
+				
+
+			
+
+
+				properties.formData.data.currentParameters.template_name = "Super Node";
+				properties.formData.data.currentParameters.template_provider = "Modeler Palette";
+				
+				// console.log("Properties",properties.formData)
+				
+
 				const messages = canvasController.getNodeMessages(nodeId, activePipelineId);
 				const additionalComponents = this.state.displayAdditionalComponents ? { "toggle-panel": <AddtlCmptsTest /> } : properties.additionalComponents;
 				const expressionInfo = this.state.expressionBuilder ? ExpressionInfo : null;
@@ -1723,9 +1728,8 @@ class App extends React.Component {
 	}
 
 	actionLabelHandler(action) {
-		// Override undo/redo tooltip message for cut operations.
-		if (action.data.editType === "cut") {
-			return "Cut selected objects";
+		if (action.data.editType === "deleteSelectedObjects") {
+			return "Delete all objects";
 		}
 		return null;
 	}
@@ -1911,6 +1915,10 @@ class App extends React.Component {
 	}
 
 	getCommonProperties() {
+		
+		console.log('proper', this.state.propertiesInfo)
+
+
 		if (isEmpty(this.state.propertiesInfo)) {
 			return null;
 		}
@@ -1927,8 +1935,7 @@ class App extends React.Component {
 			buttonHandler: this.buttonHandler,
 			buttonIconHandler: this.buttonIconHandler,
 			titleChangeHandler: this.titleChangeHandler,
-			propertiesActionLabelHandler: this.propertiesActionLabelHandler,
-			tooltipLinkHandler: this.tooltipLinkHandler
+			propertiesActionLabelHandler: this.propertiesActionLabelHandler
 		};
 		if (this.state.propertiesValidationHandler) {
 			callbacks.validationHandler = this.validationHandler;
@@ -2020,13 +2027,13 @@ class App extends React.Component {
 			enableEditingActions: this.state.selectedEditingActions,
 			enableInternalObjectModel: this.state.selectedInternalObjectModel,
 			enableDragWithoutSelect: this.state.selectedDragWithoutSelect,
+			enableDragToMoveSizeNodesComments: this.state.selectedDragToMoveSizeNodesComments,
 			enableLinkSelection: this.state.selectedLinkSelection,
 			enableLinkReplaceOnNewConnection: this.state.selectedLinkReplaceOnNewConnection,
 			enableAssocLinkCreation: this.state.selectedAssocLinkCreation,
 			enablePaletteLayout: this.state.selectedPaletteLayout,
 			enableStateTag: this.state.selectedStateTag,
 			enableToolbarLayout: this.state.selectedToolbarLayout,
-			enableResizableNodes: this.state.selectedResizableNodes,
 			enableInsertNodeDroppedOnLink: this.state.selectedInsertNodeDroppedOnLink,
 			enableMoveNodesOnSupernodeResize: this.state.selectedMoveNodesOnSupernodeResize,
 			enablePositionNodeOnRightFlyoutOpen: this.state.selectedPositionNodeOnRightFlyoutOpen,
@@ -2089,9 +2096,7 @@ class App extends React.Component {
 				{ action: "palette", label: "Palette", enable: true },
 				{ divider: true },
 				{ action: "stopit", label: "Stop", enable: false, incLabelWithIcon: "before", iconEnabled: (<StopFilledAlt32 />) },
-				{ action: "runSelection", label: "Run Selection", enable: true, incLabelWithIcon: "before", kind: "primary" },
-				{ divider: true },
-				{ action: "run", label: "Run", enable: true, iconEnabled: (<Play32 />) },
+				{ action: "runit", label: "Run", enable: true, incLabelWithIcon: "before", kind: "primary", iconEnabled: (<Play32 />) },
 				{ divider: true },
 				{ action: "undo", label: "Undo", enable: true },
 				{ action: "redo", label: "Redo", enable: true },
@@ -2101,11 +2106,7 @@ class App extends React.Component {
 				{ action: "createAutoComment", label: "Add Comment", enable: true },
 				{ action: "deleteSelectedObjects", label: "Delete", enable: true },
 				{ action: "arrangeHorizontally", label: "Arrange Horizontally", enable: true },
-				{ action: "arrangeVertically", label: "Arrange Vertically", enable: true },
-				{ divider: true },
-				{ action: "mouse", iconEnabled: (<SelectWindow32 />), label: "Mouse", enable: true, isSelected: this.state.selectedInteractionType === "Mouse" },
-				{ action: "trackpad", iconEnabled: (<TouchInteraction32 />), label: "Trackpad", enable: true, isSelected: this.state.selectedInteractionType === "Trackpad" },
-				{ divider: true }
+				{ action: "arrangeVertically", label: "Arrange Vertically", enable: true }
 			];
 
 		} else if (this.state.selectedToolbarType === TOOLBAR_TYPE_BEFORE_AFTER) {
@@ -2178,42 +2179,14 @@ class App extends React.Component {
 					{ action: "redo", label: "Redo", enable: true },
 					{ divider: true },
 					{ action: "custom-loading",
-						jsx: (
-							<div style={{ padding: "0 11px" }}>
-								<InlineLoading status="active" description="Loading..." />
-							</div>
-						)
-					},
+						jsx: (<div style={{ padding: "0 11px" }}><InlineLoading status="active" description="Loading..." /></div>) },
 					{ divider: true },
 					{ action: "custom-checkbox",
-						jsx: (
-							<div style={{ padding: "0 11px" }}>
-								<Checkbox id={"chk1"} defaultChecked labelText={"Check it out"} />
-							</div>
-						)
-					},
+						jsx: (<div style={{ padding: "0 11px" }}><Checkbox id={"chk1"} defaultChecked labelText={"Check it out"} /></div>) },
 					{ divider: true },
 					{ action: "custom-button",
 						tooltip: "A custom button of type primary!",
-						jsx: (
-							<div className="toolbar-custom-button">
-								<Button id={"btn1"} size="field" kind="primary">Custom button </Button>
-							</div>
-						)
-					},
-					{ divider: true },
-					{ action: "custom-dropdown",
-						tooltip: "A drop down using the overflow menu!",
-						jsx: (
-							<div className="toolbar-custom-button">
-								<OverflowMenu id={"ovf1"} renderIcon={TextScale32}>
-									<OverflowMenuItem itemText="Big" />
-									<OverflowMenuItem itemText="Medium" />
-									<OverflowMenuItem itemText="Little" />
-								</OverflowMenu>
-							</div>
-						)
-					},
+						jsx: (<div className="toolbar-custom-button"><Button id={"btn1"} size="field" kind="primary">Custom button </Button></div>) },
 					{ divider: true }
 				]
 			};
@@ -2520,13 +2493,6 @@ class App extends React.Component {
 					config={commonCanvasConfig}
 				/>
 			);
-		} else if (this.state.selectedExampleApp === EXAMPLE_READ_ONLY) {
-			firstCanvas = (
-				<ReadOnlyCanvas
-					ref={this.canvasRef}
-					config={commonCanvasConfig}
-				/>
-			);
 		} else if (this.state.selectedExampleApp === EXAMPLE_APP_EXPLAIN) {
 			firstCanvas = (
 				<ExplainCanvas
@@ -2636,14 +2602,10 @@ class App extends React.Component {
 			useEditorSize: this.useEditorSize,
 			disableRowMoveButtons: this.disableRowMoveButtons,
 			addRemoveRowsEnabled: this.state.addRemoveRowsEnabled,
-			hideEditButtonEnabled: this.state.hideEditButton,
 			tableButtonEnabled: this.state.tableButtonEnabled,
 			setAddRemoveRowsPropertyId: this.setAddRemoveRowsPropertyId,
 			setAddRemoveRowsEnabled: this.setAddRemoveRowsEnabled,
 			setAddRemoveRows: this.setAddRemoveRows,
-			setHideEditButtonEnabled: this.setHideEditButtonDisabled,
-			setHideEditButton: this.setHideEditButton,
-			setHideEditButtonPropertyId: this.setHideEditButtonPropertyId,
 			setTableButtonPropertyId: this.setTableButtonPropertyId,
 			setTableButtonId: this.setTableButtonId,
 			setTableButtonIdEnabled: this.setTableButtonIdEnabled,
