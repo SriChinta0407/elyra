@@ -19,7 +19,7 @@
         "itemType": "primaryTabs",
         "tabs": [
           {
-            "text": "Fields",
+            "text": "Basic Information",
             "group": "fields-settings",
             "content": {
               "itemType": "panel",
@@ -38,7 +38,177 @@
                           "control": {
                             "name": "custom_fields",
                             "label": {
-                              "text": "Use custom fields"
+                              "text": "Editable"
+                            },
+                            "labelVisible": false,
+                            "controlType": "checkbox",
+                            "valueDef": {
+                              "propType": "boolean",
+                              "isList": false,
+                              "isMap": false
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+
+                  {
+                    "itemType": "control",
+                    "control": {
+                      "name": "node_name",
+                      "label": {
+                        "text": "Title"
+                      },
+                      "controlType": "textfield",
+                      "valueDef": {
+                        "propType": "string",
+                        "isMap": false
+                      }
+                    }
+                  },
+
+                  {
+                    "itemType": "control",
+                    "control": {
+                      "name": "activity_id",
+                      "label": {
+                        "text": "Activity ID"
+                      },
+                      "controlType": "textfield",
+                      "valueDef": {
+                        "propType": "string",
+                        "isList": false,
+                        "isMap": false
+                      }
+                    }
+                  },
+
+                  {
+                    "itemType": "control",
+                    "control": {
+                      "name": "template_name",
+                      "label": {
+                        "text": "Template Name"
+                      },
+                      "controlType": "textfield",
+                      "valueDef": {
+                        "propType": "string",
+                        "isList": false,
+                        "isMap": false
+                      }
+                    }
+                  },
+
+                  {
+                    "itemType": "control",
+                    "control": {
+                      "name": "template_provider",
+                      "label": {
+                        "text": "Template Provider"
+                      },
+                      "controlType": "textfield",
+                      "valueDef": {
+                        "propType": "string",
+                        "isList": false,
+                        "isMap": false
+                      }
+                    }
+                  },
+
+                  {
+                    "itemType": "panel",
+                    "panel": {
+                      "id": "field-allocation",
+                      "panelType": "columnSelection",
+                      "uiItems": [
+                        {
+                          "itemType": "control",
+                          "control": {
+                            "name": "version",
+                            "label": {
+                              "text": "Version"
+                            },
+                            "controlType": "selectcolumn",
+                            "valueDef": {
+                              "propType": "string",
+                              "isList": false,
+                              "isMap": false
+                            }
+                          }
+                        },
+
+                        {
+                          "itemType": "control",
+                          "control": {
+                            "name": "version",
+                            "label": {
+                              "text": "Terraform Version"
+                            },
+                            "controlType": "selectcolumn",
+                            "valueDef": {
+                              "propType": "string",
+                              "isList": false,
+                              "isMap": false
+                            }
+                          }
+                        },
+
+                        {
+                          "itemType": "panel",
+                          "panel": {
+                            "id": "use-custom",
+                            "panelType": "general",
+                            "uiItems": [
+                              {
+                                "itemType": "control",
+                                "control": {
+                                  "name": "custom_fields",
+                                  "label": {
+                                    "text": "Use compatible version"
+                                  },
+                                  "labelVisible": false,
+                                  "controlType": "checkbox",
+                                  "valueDef": {
+                                    "propType": "boolean",
+                                    "isList": false,
+                                    "isMap": false
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+
+          {
+            "text": "Parameters",
+            "group": "build-options",
+            "content": {
+              "itemType": "panel",
+              "panel": {
+                "id": "build-options",
+                "panelType": "general",
+                "uiItems": [
+                  {
+                    "itemType": "panel",
+                    "panel": {
+                      "id": "use-custom",
+                      "panelType": "general",
+                      "uiItems": [
+                        {
+                          "itemType": "control",
+                          "control": {
+                            "name": "custom_fields",
+                            "label": {
+                              "text": "Editable"
                             },
                             "labelVisible": false,
                             "controlType": "checkbox",
@@ -53,262 +223,47 @@
                     }
                   },
                   {
-                    "itemType": "panel",
-                    "panel": {
-                      "id": "field-allocation",
-                      "panelType": "columnSelection",
-                      "uiItems": [
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "target",
-                            "label": {
-                              "text": "Target"
-                            },
-                            "controlType": "selectcolumn",
-                            "valueDef": {
-                              "propType": "string",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "inputs",
-                            "label": {
-                              "text": "Inputs"
-                            },
-                            "controlType": "selectcolumns",
-                            "valueDef": {
-                              "propType": "string",
-                              "isList": true,
-                              "isMap": false
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          {
-            "text": "Build Options",
-            "group": "build-options",
-            "content": {
-              "itemType": "subTabs",
-              "tabs": [
-                {
-                  "text": "Basics",
-                  "group": "basics-settings",
-                  "content": {
-                    "itemType": "panel",
-                    "panel": {
-                      "id": "basics-settings",
-                      "panelType": "general",
-                      "uiItems": [
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "number_of_models",
-                            "label": {
-                              "text": "Number of models to build"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "sample_size",
-                            "label": {
-                              "text": "Sample size"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "double",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "max_node_number",
-                            "label": {
-                              "text": "Max number of nodes"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "max_depth",
-                            "label": {
-                              "text": "Max. depth"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "min_child_node_size",
-                            "label": {
-                              "text": "Minimum child node size"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                },
-                {
-                  "text": "Advanced",
-                  "group": "advanced-settings",
-                  "content": {
-                    "itemType": "panel",
-                    "panel": {
-                      "id": "advanced-settings",
-                      "panelType": "general",
-                      "uiItems": [
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "max_pct_missing",
-                            "label": {
-                              "text": "Max percentage of missing values"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "exclude_single_cat_pct",
-                            "label": {
-                              "text": "Exclude fields with a single category majority (%)"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        },
-                        {
-                          "itemType": "control",
-                          "control": {
-                            "name": "max_category_number",
-                            "label": {
-                              "text": "Max number of field categories"
-                            },
-                            "controlType": "numberfield",
-                            "valueDef": {
-                              "propType": "integer",
-                              "isList": false,
-                              "isMap": false
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "text": "Annotations",
-            "group": "annotations",
-            "content": {
-              "itemType": "panel",
-              "panel": {
-                "id": "annotations",
-                "panelType": "general",
-                "uiItems": [
-                  {
-                    "itemType": "control",
-                    "control": {
-                      "name": "use_custom_name",
-                      "label": {
-                        "text": "Custom name"
-                      },
-                      "labelVisible": false,
-                      "controlType": "checkbox",
-                      "valueDef": {
-                        "propType": "boolean",
-                        "isList": false,
-                        "isMap": false
-                      }
-                    }
-                  },
-                  {
-                    "itemType": "control",
-                    "control": {
-                      "name": "custom_name",
-                      "label": {
-                        "text": ""
-                      },
-                      "controlType": "textfield",
-                      "valueDef": {
-                        "propType": "string",
-                        "isList": false,
-                        "isMap": false
-                      }
-                    }
-                  },
-                  {
-                    "itemType": "control",
-                    "control": {
-                      "name": "annotation",
-                      "label": {
-                        "text": "Annotation"
-                      },
-                      "controlType": "textarea",
-                      "valueDef": {
-                        "propType": "string",
-                        "isList": false,
-                        "isMap": false
-                      }
-                    }
-                  }
+										"id": "data-settings-uiitem",
+										"itemType": "panel",
+										"panel": {
+											"id": "data-settings",
+											"panelType": "columnSelection",
+											"uiItems": [
+												{
+													"id": "selected_fields-uiitem",
+													"itemType": "control",
+													"control": {
+														"name": "selected_fields",
+														"role": "column",
+														"visible": true,
+														"description": {
+															"text": "Fields added to this list will either be filtered or retained based on the mode selected."
+														},
+														"separateLabel": true,
+														"label": {
+															"text": "Select Fields"
+														},
+														"language": "CLEM",
+														"controlType": "selectcolumns",
+														"required": false,
+														"valueDef": {
+															"propType": "string",
+															"isList": true,
+															"isMap": false
+														},
+														"labelVisible": true
+													}
+												}
+											]
+										}
+									}
                 ]
               }
             }
           }
+          
+          
+
         ]
       }
     ],
@@ -328,6 +283,11 @@
     ],
     "data": {
       "currentParameters": {
+        "node_name" : "Random Trees",
+        "activity_id": "singlevi4cf68d93",
+        "template_name": "",
+        "template_provider": "",
+        "version": ["1.0.0.0"],
         "custom_fields": false,
         "max_node_number": 10000,
         "number_of_models": 100,
@@ -354,3 +314,5 @@
   },
   "additionalComponents": null
 }
+
+
